@@ -18,17 +18,24 @@ from adafruit_led_animation.animation.rainbow import Rainbow
 from adafruit_led_animation.animation.rainbowchase import RainbowChase
 from adafruit_led_animation.animation.rainbowsparkle import RainbowSparkle
 from adafruit_led_animation.animation.rainbowcomet import RainbowComet
+import setup
 
-# CONFIGURABLES ------------------------
+# SETUP ------------------------
 
 MACRO_FOLDER = '/macros'
+
+setup.init()
+macropad = setup.macropad
+lighting_modes = setup.lighting_modes
+current_lighting_mode = setup.current_lighting_mode
+rainbow = setup.rainbow
+rainbow_chase = setup.rainbow_chase
+rainbow_sparkle = setup.rainbow_sparkle
+rainbow_comet = setup.rainbow_comet
 
 # CLASSES AND FUNCTIONS ----------------
 
 class App:
-    """ Class representing a host-side application, for which we have a set
-        of macro sequences. Project code was originally more complex and
-        this was helpful, but maybe it's excessive now?"""
     def __init__(self, appdata):
         self.name = appdata['name']
         self.macros = appdata['macros']
@@ -53,20 +60,6 @@ class App:
 
 
 # INITIALIZATION -----------------------
-
-macropad = MacroPad()
-macropad.display.auto_refresh = False
-macropad.pixels.auto_write = False
-
-# Initialize lighting modes
-lighting_modes = ['MACROS', 'RAINBOW', 'CHASE', 'COMET', 'SPARKLE', 'LIGHTSOUT']
-current_lighting_mode = 0
-
-rainbow = Rainbow(macropad.pixels, speed=0.2, step=5, period=4)
-rainbow_chase = RainbowChase(macropad.pixels, speed=0.3, step=10, size=1, spacing=2)
-rainbow_sparkle = RainbowSparkle(macropad.pixels, speed=0.1, num_sparkles=15)
-rainbow_comet = RainbowComet(macropad.pixels, speed=0.15, tail_length=8, bounce=True)
-
 # Set up displayio group with all the labels
 group = displayio.Group()
 for key_index in range(12):
@@ -106,14 +99,14 @@ if not apps:
         pass
 
 last_position = None
-#last_encoder_switch = macropad.encoder_switch_debounced.pressed
 app_index = 0
 apps[app_index].switch()
 
-#macro_lighting = [macro[0] for macro in apps[app_index].macros]
-
 # MAIN LOOP ----------------------------
 while True:
+    # Update display
+    macropad.display.refresh()
+    
     # Handle the different rainbow lighting modes
     if lighting_modes[current_lighting_mode] == 'RAINBOW':
         rainbow.animate()
@@ -237,3 +230,5 @@ while True:
             else:
                 macropad.pixels[i] = 0x000000
             macropad.pixels.show()
+    
+    
